@@ -3,6 +3,7 @@ using System;
 using InstrumentSite.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InstrumentSite.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250117222218_ProductCrud")]
+    partial class ProductCrud
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,13 +265,13 @@ namespace InstrumentSite.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 17, 22, 48, 30, 914, DateTimeKind.Utc).AddTicks(1634),
+                            CreatedAt = new DateTime(2025, 1, 17, 22, 22, 18, 205, DateTimeKind.Utc).AddTicks(4446),
                             Email = "admin@example.com",
                             FirstName = "Alex",
                             LastName = "Kacov",
-                            PasswordHash = "$2a$11$HAPz25iFVlyFZ1WGOSYfYOb.LgyYme06vl0argz1Iarolrmo74IfC",
+                            PasswordHash = "$2a$11$gANisKKDuqIGHIkj16xB7.5qgkOt3Ae8F/zRh4GNC4hhQTRPal/Cy",
                             Role = "Admin",
-                            UpdatedAt = new DateTime(2025, 1, 17, 22, 48, 30, 914, DateTimeKind.Utc).AddTicks(1639)
+                            UpdatedAt = new DateTime(2025, 1, 17, 22, 22, 18, 205, DateTimeKind.Utc).AddTicks(4450)
                         });
                 });
 

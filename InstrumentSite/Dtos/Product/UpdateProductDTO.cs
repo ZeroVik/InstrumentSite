@@ -19,6 +19,10 @@ namespace InstrumentSite.Dtos.Product
 
         [Required]
         public int CategoryId { get; set; }
+
+        [Required]
+        [MaxLength(500)] // Optional: Adjust length as needed
+        public string ImageUrl { get; set; }
     }
 
 }

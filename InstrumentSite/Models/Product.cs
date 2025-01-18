@@ -17,6 +17,7 @@ namespace InstrumentSite.Models
         [Required]
         public decimal Price { get; set; }
 
+        [Required] 
         public string ImageUrl { get; set; }
 
         // Foreign Key
