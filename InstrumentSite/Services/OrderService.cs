@@ -4,6 +4,7 @@ using InstrumentSite.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace InstrumentSite.Services
@@ -54,6 +55,7 @@ namespace InstrumentSite.Services
             {
                 UserId = createOrderDto.UserId,
                 TotalAmount = createOrderDto.TotalAmount,
+                Address = JsonSerializer.Serialize(createOrderDto.Address), // Convert object to JSON string
                 OrderDetails = createOrderDto.OrderDetails.Select(od => new OrderDetail
                 {
                     ProductId = od.ProductId,

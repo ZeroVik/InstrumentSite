@@ -20,6 +20,8 @@ namespace InstrumentSite.Models
         [Required] 
         public string ImageUrl { get; set; }
 
+        public bool IsSecondHand { get; set; }
+
         // Foreign Key
         public int CategoryId { get; set; }
 

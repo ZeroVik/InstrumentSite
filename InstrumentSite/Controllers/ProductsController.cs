@@ -40,8 +40,15 @@ namespace InstrumentSite.Controllers
             }
         }
 
-        [HttpPost("create", Name = "CreateProduct")] // POST /api/products/create
-        [Authorize(Policy = "AdminPolicy")]
+        [HttpGet("filter", Name = "FilterProducts")]
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProductsByType(bool isSecondHand)
+        {
+            var products = await _productService.GetProductsByTypeAsync(isSecondHand);
+            return Ok(products);
+        }
+
+
+        [HttpPost("create", Name = "CreateProduct")]
         public async Task<ActionResult<int>> AddProduct([FromForm] CreateProductDTO productDto)
         {
             if (!ModelState.IsValid)
@@ -51,7 +58,11 @@ namespace InstrumentSite.Controllers
 
             try
             {
-                var productId = await _productService.AddProductAsync(productDto);
+                // Check if the user is an admin
+                var isAdmin = User.IsInRole("Admin");
+
+                // Pass the IsSecondHand value explicitly
+                var productId = await _productService.AddProductAsync(productDto, !isAdmin);
                 return CreatedAtAction(nameof(GetProductById), new { id = productId }, productDto);
             }
             catch (ArgumentException ex)
@@ -63,6 +74,7 @@ namespace InstrumentSite.Controllers
                 return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
             }
         }
+
 
         [HttpPut("update/{id}", Name = "UpdateProduct")] // PUT /api/products/update/{id}
         [Authorize(Policy = "AdminPolicy")]

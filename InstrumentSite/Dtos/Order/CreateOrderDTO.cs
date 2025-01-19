@@ -11,6 +11,9 @@ namespace InstrumentSite.Dtos.Order
         public List<OrderDetailDTO> OrderDetails { get; set; }
 
         public decimal TotalAmount { get; set; }
+
+        [Required]
+        public object Address { get; set; }
     }
 
 

@@ -3,6 +3,7 @@ using System;
 using InstrumentSite.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace InstrumentSite.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250119155000_SecondHand")]
+    partial class SecondHand
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -110,10 +113,6 @@ namespace InstrumentSite.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");
@@ -271,13 +270,13 @@ namespace InstrumentSite.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 19, 16, 18, 32, 355, DateTimeKind.Utc).AddTicks(4206),
+                            CreatedAt = new DateTime(2025, 1, 19, 15, 50, 0, 94, DateTimeKind.Utc).AddTicks(7527),
                             Email = "admin@example.com",
                             FirstName = "Alex",
                             LastName = "Kacov",
-                            PasswordHash = "$2a$11$WCFVgOuqtHO2nVsWN0api.F0f3xU/RUjviHm8rTPfF.a35OsnzG.K",
+                            PasswordHash = "$2a$11$tj2FESK26otRdUVwVa3bYuKD63oj0OeP1hECRnTYhXCEAG36xrJwe",
                             Role = "Admin",
-                            UpdatedAt = new DateTime(2025, 1, 19, 16, 18, 32, 355, DateTimeKind.Utc).AddTicks(4210)
+                            UpdatedAt = new DateTime(2025, 1, 19, 15, 50, 0, 94, DateTimeKind.Utc).AddTicks(7531)
                         });
                 });
 

@@ -19,6 +19,7 @@ namespace InstrumentSite.Dtos.Product
 
         [Required]
         public IFormFile ImageFile { get; set; }
+
     }
 
 }

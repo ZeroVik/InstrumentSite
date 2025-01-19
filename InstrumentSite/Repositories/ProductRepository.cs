@@ -33,6 +33,15 @@ public class ProductRepository
         return product.Id;
     }
 
+    public async Task<IEnumerable<Product>> GetProductsByTypeAsync(bool isSecondHand)
+    {
+        return await _dbContext.Products
+            .Include(p => p.Category)
+            .Where(p => p.IsSecondHand == isSecondHand)
+            .ToListAsync();
+    }
+
+
     public async Task<bool> UpdateProductAsync(Product product)
     {
         await ValidateCategoryExists(product.CategoryId);

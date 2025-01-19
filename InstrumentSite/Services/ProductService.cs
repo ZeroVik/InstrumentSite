@@ -48,7 +48,7 @@ namespace InstrumentSite.Services
             };
         }
 
-        public async Task<int> AddProductAsync(CreateProductDTO productDto)
+        public async Task<int> AddProductAsync(CreateProductDTO productDto, bool isSecondHand)
         {
             if (string.IsNullOrWhiteSpace(productDto.Name))
             {
@@ -69,11 +69,28 @@ namespace InstrumentSite.Services
                 Description = productDto.Description,
                 Price = productDto.Price,
                 CategoryId = productDto.CategoryId,
+                IsSecondHand = isSecondHand, // Set IsSecondHand here
                 ImageUrl = imagePath
             };
 
             return await _productRepository.AddProductAsync(product);
         }
+
+
+        public async Task<IEnumerable<ProductDTO>> GetProductsByTypeAsync(bool isSecondHand)
+        {
+            var products = await _productRepository.GetProductsByTypeAsync(isSecondHand);
+            return products.Select(product => new ProductDTO
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Price = product.Price,
+                CategoryName = product.Category.Name,
+                ImageUrl = product.ImageUrl,
+                IsSecondHand = product.IsSecondHand
+            });
+        }
+
 
         public async Task<bool> UpdateProductAsync(UpdateProductDTO productDto)
         {

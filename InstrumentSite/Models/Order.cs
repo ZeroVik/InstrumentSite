@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 
 namespace InstrumentSite.Models
 {
@@ -16,7 +19,11 @@ namespace InstrumentSite.Models
 
         public DateTime OrderDate { get; set; } = DateTime.UtcNow; // Timestamp for when the order was placed
 
-        public string Status { get; set; } // Status of the order (e.g., "Pending", "Shipped", "Delivered", "Canceled")
+        public string Status { get; set; } // Status of the order (e.g., "Pending", "Shipped",
+                                           // "Delivered", "Canceled")
+
+        [Column(TypeName = "jsonb")]
+        public string Address { get; set; } // Address stored as JSONB
 
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>(); // Navigation Property for Order Items
     }
