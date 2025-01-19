@@ -4,12 +4,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace InstrumentSite.Services.Token
+namespace InstrumentSite.Utilities
 {
-    public class JwtTokenService : ITokenService
+    public class JwtTokenGeneratorUtil
     {
         private readonly IConfiguration _configuration;
-        public JwtTokenService(IConfiguration configuration)
+        public JwtTokenGeneratorUtil(IConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -23,7 +23,7 @@ namespace InstrumentSite.Services.Token
             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
+            };
 
             var expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]));
 

@@ -4,13 +4,12 @@
     {
         public static async Task<string> SaveImageFileAsync(IFormFile imageFile)
         {
-            var uploadsDirectory = Path.Combine("uploads", "products");
+            var uploadsDirectory = Path.Combine("wwwroot", "uploads", "products");
             if (!Directory.Exists(uploadsDirectory))
             {
                 Directory.CreateDirectory(uploadsDirectory);
             }
 
-            // Generate a unique file name
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(imageFile.FileName)}";
             var filePath = Path.Combine(uploadsDirectory, fileName);
 
@@ -22,6 +21,7 @@
             // Return relative path
             return Path.Combine("uploads/products", fileName).Replace("\\", "/");
         }
+
 
     }
 }

@@ -1,5 +1,4 @@
 ﻿using InstrumentSite.Models;
-using InstrumentSite.Services.Token;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using InstrumentSite.Services;
@@ -8,6 +7,7 @@ using InstrumentSite.Data;
 using InstrumentSite.Enums;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using InstrumentSite.Utilities;
 
 namespace InstrumentSite.Controllers
 {
@@ -16,9 +16,9 @@ namespace InstrumentSite.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
-        private readonly ITokenService _tokenService;
+        private readonly JwtTokenGeneratorUtil _tokenService;
 
-        public AuthController(AppDbContext dbContext, ITokenService tokenService)
+        public AuthController(AppDbContext dbContext, JwtTokenGeneratorUtil tokenService)
         {
             _dbContext = dbContext;
             _tokenService = tokenService;

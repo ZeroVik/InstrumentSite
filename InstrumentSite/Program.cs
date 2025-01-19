@@ -1,9 +1,7 @@
 using InstrumentSite.Data;
-using InstrumentSite.Repositories.Category;
-using InstrumentSite.Repositories.Product;
-using InstrumentSite.Services.Category;
-using InstrumentSite.Services.Product;
-using InstrumentSite.Services.Token;
+using InstrumentSite.Repositories;
+using InstrumentSite.Services;
+using InstrumentSite.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,12 +15,14 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<ITokenService, JwtTokenService>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<JwtTokenGeneratorUtil>();
+builder.Services.AddScoped<CategoryRepository>();
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ProductRepository>();
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<CartRepository>();
+builder.Services.AddHttpContextAccessor();
 
 
 

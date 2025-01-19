@@ -1,6 +1,6 @@
 ﻿using InstrumentSite.Dtos.Product;
 using InstrumentSite.Services;
-using InstrumentSite.Services.Product;
+using InstrumentSite.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -12,9 +12,9 @@ namespace InstrumentSite.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly IProductService _productService;
+        private readonly ProductService _productService;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(ProductService productService)
         {
             _productService = productService;
         }
@@ -42,7 +42,7 @@ namespace InstrumentSite.Controllers
 
         [HttpPost]
         [Authorize(Policy = "AdminPolicy")]
-        public async Task<ActionResult<int>> AddProduct(CreateProductDTO productDto)
+        public async Task<ActionResult<int>> AddProduct([FromForm] CreateProductDTO productDto)
         {
             if (!ModelState.IsValid)
             {
@@ -58,11 +58,15 @@ namespace InstrumentSite.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
         [Authorize(Policy = "AdminPolicy")]
-        public async Task<IActionResult> UpdateProduct(int id, UpdateProductDTO productDto)
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] UpdateProductDTO productDto)
         {
             if (id != productDto.Id)
             {
@@ -79,14 +83,17 @@ namespace InstrumentSite.Controllers
                 var updated = await _productService.UpdateProductAsync(productDto);
                 if (!updated)
                 {
-                    return NotFound($"Product with ID {id} not found.");
+                    return NotFound(new { message = $"Product with ID {id} not found." });
                 }
-
                 return NoContent();
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
             }
         }
 

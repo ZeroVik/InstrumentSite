@@ -83,7 +83,7 @@ namespace InstrumentSite.Data
             });
 
             modelBuilder.Entity<Product>().HasData(
-            new Product { Id = 1, Name = "Acoustic Guitar", Price = 199.99m, Description = "Guitar", ImageUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.jUzKhxeqrkYWFMhyG47wTwHaLx%26pid%3DApi&f=1&ipt=e3d60bc60776244798485bf9bcec423362c9dc8ebd322f7956048a0a7b8602b7&ipo=images", CategoryId = 1 },
+            new Product { Id = 1, Name = "Acoustic Guitar", Price = 199.99m, Description = "Guitar", ImageUrl = "uploads/Guitar.jpg", CategoryId = 1 },
             new Product { Id = 2, Name = "Electric Drum Kit", Price = 499.99m, Description = "Electric Drums", ImageUrl = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.GDvI_nVc29ofgxfXFao1vwHaHa%26pid%3DApi&f=1&ipt=1fec529b0b28d922c840939fbff720313f7075d9b04d2fb5bf8c45cd07137c17&ipo=images", CategoryId = 2 }
             );
         }

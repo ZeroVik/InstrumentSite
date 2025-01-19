@@ -1,74 +1,91 @@
 ﻿using InstrumentSite.Dtos.Category;
-using InstrumentSite.Services.Category;
+using InstrumentSite.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-[ApiController]
-[Route("api/[controller]")]
-public class CategoriesController : ControllerBase
+namespace InstrumentSite.Controllers
 {
-    private readonly ICategoryService _categoryService;
-
-    public CategoriesController(ICategoryService categoryService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CategoriesController : ControllerBase
     {
-        _categoryService = categoryService;
-    }
+        private readonly CategoryService _categoryService;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategories()
-    {
-        var categories = await _categoryService.GetAllCategoriesAsync();
-        return Ok(categories);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<CategoryDTO>> GetCategoryById(int id)
-    {
-        var category = await _categoryService.GetCategoryByIdAsync(id);
-        if (category == null) return NotFound($"Category with ID {id} not found.");
-        return Ok(category);
-    }
-
-    [HttpPost]
-    [Authorize(Policy = "AdminPolicy")]
-    public async Task<ActionResult<int>> AddCategory(CreateCategoryDTO categoryDto)
-    {
-        if (!ModelState.IsValid)
+        public CategoriesController(CategoryService categoryService)
         {
-            return BadRequest(ModelState);
+            _categoryService = categoryService;
         }
 
-        var categoryId = await _categoryService.AddCategoryAsync(categoryDto);
-        return CreatedAtAction(nameof(GetCategoryById), new { id = categoryId }, categoryDto);
-    }
-
-    [HttpPut("{id}")]
-    [Authorize(Policy = "AdminPolicy")]
-    public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDTO categoryDto)
-    {
-        if (id != categoryDto.Id)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetAllCategories()
         {
-            return BadRequest("Category ID in the URL does not match the ID in the body.");
+            var categories = await _categoryService.GetAllCategoriesAsync();
+            return Ok(categories);
         }
 
-        if (!ModelState.IsValid)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CategoryDTO>> GetCategoryById(int id)
         {
-            return BadRequest(ModelState);
+            try
+            {
+                var category = await _categoryService.GetCategoryByIdAsync(id);
+                return Ok(category);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
-        var updated = await _categoryService.UpdateCategoryAsync(categoryDto);
-        if (!updated) return NotFound($"Category with ID {id} not found.");
+        [HttpPost]
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<ActionResult<int>> AddCategory(CreateCategoryDTO createCategoryDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        return NoContent();
-    }
+            var categoryId = await _categoryService.AddCategoryAsync(createCategoryDto);
+            return CreatedAtAction(nameof(GetCategoryById), new { id = categoryId }, createCategoryDto);
+        }
 
-    [HttpDelete("{id}")]
-    [Authorize(Policy = "AdminPolicy")]
-    public async Task<IActionResult> DeleteCategory(int id)
-    {
-        var deleted = await _categoryService.DeleteCategoryAsync(id);
-        if (!deleted) return NotFound($"Category with ID {id} not found.");
+        [HttpPut("{id}")]
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDTO updateCategoryDto)
+        {
+            if (id != updateCategoryDto.Id)
+            {
+                return BadRequest("Category ID in the URL does not match the ID in the body.");
+            }
 
-        return NoContent();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var updated = await _categoryService.UpdateCategoryAsync(updateCategoryDto);
+            if (!updated)
+            {
+                return NotFound(new { message = $"Category with ID {id} not found." });
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminPolicy")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var deleted = await _categoryService.DeleteCategoryAsync(id);
+            if (!deleted)
+            {
+                return NotFound(new { message = $"Category with ID {id} not found." });
+            }
+
+            return NoContent();
+        }
     }
 }
