@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace InstrumentSite.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/products")] // Base path for products
     public class ProductsController : ControllerBase
     {
         private readonly ProductService _productService;
@@ -19,14 +19,14 @@ namespace InstrumentSite.Controllers
             _productService = productService;
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetAllProducts")] // GET /api/products
         public async Task<ActionResult<IEnumerable<ProductDTO>>> GetAllProducts()
         {
             var products = await _productService.GetAllProductsAsync();
             return Ok(products);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("details/{id}", Name = "GetProductDetails")] // GET /api/products/details/{id}
         public async Task<ActionResult<ProductDTO>> GetProductById(int id)
         {
             try
@@ -40,7 +40,7 @@ namespace InstrumentSite.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("create", Name = "CreateProduct")] // POST /api/products/create
         [Authorize(Policy = "AdminPolicy")]
         public async Task<ActionResult<int>> AddProduct([FromForm] CreateProductDTO productDto)
         {
@@ -64,7 +64,7 @@ namespace InstrumentSite.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("update/{id}", Name = "UpdateProduct")] // PUT /api/products/update/{id}
         [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> UpdateProduct(int id, [FromForm] UpdateProductDTO productDto)
         {
@@ -97,7 +97,7 @@ namespace InstrumentSite.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("remove/{id}", Name = "DeleteProduct")] // DELETE /api/products/remove/{id}
         [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
