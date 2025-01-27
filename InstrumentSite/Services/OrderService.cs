@@ -51,22 +51,34 @@ namespace InstrumentSite.Services
 
         public async Task<int> CreateOrderAsync(CreateOrderDTO createOrderDto)
         {
+            // Create the Order entity
             var order = new Order
             {
                 UserId = createOrderDto.UserId,
                 TotalAmount = createOrderDto.TotalAmount,
                 Address = JsonSerializer.Serialize(createOrderDto.Address), // Convert object to JSON string
-                OrderDetails = createOrderDto.OrderDetails.Select(od => new OrderDetail
+                Status = "Pending",
+                OrderDetails = new List<OrderDetail>() // Initialize OrderDetails as an empty list
+            };
+
+            // Add each OrderDetail individually
+            foreach (var od in createOrderDto.OrderDetails)
+            {
+                var orderDetail = new OrderDetail
                 {
                     ProductId = od.ProductId,
                     Quantity = od.Quantity,
                     UnitPrice = od.UnitPrice
-                }).ToList(),
-                Status = "Pending"
-            };
+                };
+                order.OrderDetails.Add(orderDetail);
+            }
 
-            return await _orderRepository.CreateOrderAsync(order);
+            // Save the order using the repository
+            var orderId = await _orderRepository.CreateOrderAsync(order);
+            await _orderRepository.ClearCartAsync(createOrderDto.UserId);
+            return orderId;
         }
+
 
         public async Task UpdateOrderStatusAsync(int orderId, string status)
         {

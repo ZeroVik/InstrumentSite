@@ -52,11 +52,17 @@ namespace InstrumentSite.Controllers
         }
 
         [HttpPut("UpdateStatus/{orderId}")]
-        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromBody] string status)
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromBody] UpdateStatusDTO statusDto)
         {
-            await _orderService.UpdateOrderStatusAsync(orderId, status);
+            if (statusDto == null || string.IsNullOrWhiteSpace(statusDto.Status))
+            {
+                return BadRequest(new { message = "The status field is required." });
+            }
+
+            await _orderService.UpdateOrderStatusAsync(orderId, statusDto.Status);
             return Ok(new { message = "Order status updated successfully." });
         }
+
 
         [HttpDelete("{orderId}")]
         public async Task<IActionResult> DeleteOrder(int orderId)

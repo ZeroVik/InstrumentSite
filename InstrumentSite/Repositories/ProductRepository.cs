@@ -33,6 +33,14 @@ public class ProductRepository
         return product.Id;
     }
 
+    public async Task<IEnumerable<Product>> GetProductsByCategoryAsync(string category)
+    {
+        return await _dbContext.Products
+            .Include(p => p.Category)
+            .Where(p => p.Category.Name == category)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Product>> GetProductsByTypeAsync(bool isSecondHand)
     {
         return await _dbContext.Products
@@ -59,9 +67,12 @@ public class ProductRepository
             existingProduct.ImageUrl = product.ImageUrl;
         }
 
+        _dbContext.Products.Update(existingProduct);
         await _dbContext.SaveChangesAsync();
+
         return true;
     }
+
 
     public async Task<bool> DeleteProductAsync(int id)
     {

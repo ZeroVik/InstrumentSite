@@ -1,7 +1,6 @@
 ﻿using InstrumentSite.Dtos.Cart;
 using InstrumentSite.Models;
 using InstrumentSite.Repositories;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,12 +18,17 @@ namespace InstrumentSite.Services
             _productRepository = productRepository;
         }
 
-        public async Task<CartDTO> GetCartByUserIdAsync(string userId)
+        public async Task<CartDTO> GetCartByUserIdAsync(int userId)
         {
             var cart = await _cartRepository.GetCartByUserIdAsync(userId);
             if (cart == null)
             {
-                return new CartDTO { UserId = userId, Items = new List<CartItemDTO>(), TotalPrice = 0 };
+                return new CartDTO
+                {
+                    UserId = userId,
+                    Items = new List<CartItemDTO>(),
+                    TotalPrice = 0
+                };
             }
 
             var cartDto = new CartDTO
@@ -34,8 +38,8 @@ namespace InstrumentSite.Services
                 Items = cart.CartItems.Select(item => new CartItemDTO
                 {
                     CartItemId = item.Id,
-                    InstrumentId = item.ProductId,
-                    InstrumentName = item.Product.Name,
+                    ProductId = item.ProductId,
+                    ProductName = item.Product.Name,
                     UnitPrice = item.Price,
                     Quantity = item.Quantity
                 }).ToList(),
@@ -45,23 +49,17 @@ namespace InstrumentSite.Services
             return cartDto;
         }
 
-        public async Task<Product> GetProductByIdAsync(int productId)
-        {
-            var product = await _productRepository.GetProductByIdAsync(productId);
-            if (product == null)
-            {
-                throw new KeyNotFoundException($"Product with ID {productId} not found.");
-            }
-            return product;
-        }
-
-        public async Task AddToCartAsync(string userId, int productId, int quantity, decimal price)
+        public async Task AddToCartAsync(int userId, int productId, int quantity, decimal price)
         {
             var cart = await _cartRepository.GetCartByUserIdAsync(userId);
-
             if (cart == null)
             {
-                cart = new Cart { UserId = userId, CartItems = new List<CartItem>() };
+                cart = new Cart
+                {
+                    UserId = userId,
+                    CartItems = new List<CartItem>()
+                };
+                // Assign the created cart since CreateCartAsync returns a cart
                 cart = await _cartRepository.CreateCartAsync(cart);
             }
 
@@ -69,7 +67,7 @@ namespace InstrumentSite.Services
             if (existingItem != null)
             {
                 existingItem.Quantity += quantity;
-                await _cartRepository.UpdateCartItemAsync(existingItem);
+                await _cartRepository.UpdateCartItemAsync(existingItem); // Call without assignment
             }
             else
             {
@@ -80,13 +78,20 @@ namespace InstrumentSite.Services
                     Quantity = quantity,
                     Price = price
                 };
-                await _cartRepository.AddCartItemAsync(cartItem);
+                await _cartRepository.AddCartItemAsync(cartItem); // Call without assignment
             }
         }
 
-        public async Task RemoveFromCartAsync(int cartItemId)
+        public async Task<bool> CheckProductExistsAsync(int productId)
+        {
+            var product = await _productRepository.GetProductByIdAsync(productId);
+            return product != null;
+        }
+
+        public async Task<bool> RemoveFromCartAsync(int cartItemId)
         {
             await _cartRepository.RemoveCartItemAsync(cartItemId);
+            return true;
         }
 
         public async Task ClearCartAsync(int cartId)

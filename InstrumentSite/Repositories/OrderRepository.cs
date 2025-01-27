@@ -40,6 +40,19 @@ namespace InstrumentSite.Repositories
             return order.Id;
         }
 
+        public async Task ClearCartAsync(int userId)
+        {
+            var cart = await _dbContext.Carts.Include(c => c.CartItems)
+                                              .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart != null)
+            {
+                _dbContext.CartItems.RemoveRange(cart.CartItems);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+
         public async Task UpdateOrderStatusAsync(int orderId, string status)
         {
             var order = await _dbContext.Orders.FindAsync(orderId);

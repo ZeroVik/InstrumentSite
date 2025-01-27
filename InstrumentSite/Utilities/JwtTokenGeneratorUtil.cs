@@ -20,13 +20,14 @@ namespace InstrumentSite.Utilities
 
             var claims = new[]
             {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim("email", user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role.ToString()), // Store role as string
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]));
 
+            var expires = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiresInMinutes"]));
             var token = new JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
@@ -36,7 +37,8 @@ namespace InstrumentSite.Utilities
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-
         }
+
+
     }
 }

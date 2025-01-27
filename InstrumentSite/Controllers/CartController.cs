@@ -17,42 +17,63 @@ namespace InstrumentSite.Controllers
             _cartService = cartService;
         }
 
+        // Get cart by userId
         [HttpGet("{userId}")]
-        public async Task<ActionResult<CartDTO>> GetCart(string userId)
+        public async Task<ActionResult<CartDTO>> GetCart(int userId)
         {
             var cart = await _cartService.GetCartByUserIdAsync(userId);
+            if (cart == null || cart.Items.Count == 0)
+            {
+                return NotFound(new { message = $"Cart for user with ID {userId} is empty or does not exist." });
+            }
+
             return Ok(cart);
         }
 
+        // Add an item to the cart
         [HttpPost("AddItem")]
-        public async Task<IActionResult> AddToCart(string userId, int productId, int quantity, decimal price)
+        public async Task<IActionResult> AddToCart([FromBody] CartItemDTO cartItemDto)
         {
-            var product = await _cartService.GetProductByIdAsync(productId);
-            if (product == null)
+            if (cartItemDto.ProductId <= 0)
             {
-                return NotFound(new { message = $"Product with ID {productId} not found." });
+                return BadRequest(new { message = "Invalid Product ID." });
             }
 
-            await _cartService.AddToCartAsync(userId, productId, quantity, price);
+            var productExists = await _cartService.CheckProductExistsAsync(cartItemDto.ProductId);
+            if (!productExists)
+            {
+                return NotFound(new { message = $"Product with ID {cartItemDto.ProductId} not found." });
+            }
+
+            await _cartService.AddToCartAsync(cartItemDto.UserId, cartItemDto.ProductId, cartItemDto.Quantity, cartItemDto.UnitPrice);
             return Ok(new { message = "Item added to cart successfully." });
         }
 
+
+        // Remove an item from the cart
         [HttpDelete("RemoveItem/{cartItemId}")]
         public async Task<IActionResult> RemoveFromCart(int cartItemId)
         {
-            await _cartService.RemoveFromCartAsync(cartItemId);
+            var result = await _cartService.RemoveFromCartAsync(cartItemId);
+            if (!result)
+            {
+                return NotFound(new { message = $"Cart item with ID {cartItemId} not found." });
+            }
+
             return Ok(new { message = "Item removed from cart successfully." });
         }
 
+        // Clear the cart for a specific user
         [HttpDelete("ClearCart/{userId}")]
-        public async Task<IActionResult> ClearCart(string userId)
+        public async Task<IActionResult> ClearCart(int userId)
         {
             var cart = await _cartService.GetCartByUserIdAsync(userId);
-            if (cart != null)
+            if (cart == null || cart.Items.Count == 0)
             {
-                await _cartService.ClearCartAsync(cart.CartId);
+                return NotFound(new { message = $"Cart for user with ID {userId} is empty or does not exist." });
             }
 
+            await _cartService.ClearCartAsync(cart.CartId);
             return Ok(new { message = "Cart cleared successfully." });
         }
     }

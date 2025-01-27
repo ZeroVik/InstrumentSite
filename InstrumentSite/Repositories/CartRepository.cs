@@ -16,7 +16,7 @@ namespace InstrumentSite.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<Cart> GetCartByUserIdAsync(string userId)
+        public async Task<Cart> GetCartByUserIdAsync(int userId)
         {
             return await _dbContext.Carts
                 .Include(c => c.CartItems)

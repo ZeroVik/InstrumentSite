@@ -40,8 +40,7 @@ namespace InstrumentSite.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "AdminPolicy")]
-        public async Task<ActionResult<int>> AddCategory(CreateCategoryDTO createCategoryDto)
+        public async Task<ActionResult<CategoryDTO>> AddCategory(CreateCategoryDTO createCategoryDto)
         {
             if (!ModelState.IsValid)
             {
@@ -49,11 +48,16 @@ namespace InstrumentSite.Controllers
             }
 
             var categoryId = await _categoryService.AddCategoryAsync(createCategoryDto);
-            return CreatedAtAction(nameof(GetCategoryById), new { id = categoryId }, createCategoryDto);
+
+            // Fetch the created category from the database
+            var createdCategory = await _categoryService.GetCategoryByIdAsync(categoryId);
+
+            // Return the full category object
+            return CreatedAtAction(nameof(GetCategoryById), new { id = createdCategory.Id }, createdCategory);
         }
 
+
         [HttpPut("{id}")]
-        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDTO updateCategoryDto)
         {
             if (id != updateCategoryDto.Id)
@@ -76,7 +80,6 @@ namespace InstrumentSite.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var deleted = await _categoryService.DeleteCategoryAsync(id);

@@ -36,9 +36,8 @@ namespace InstrumentSite.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -271,13 +270,13 @@ namespace InstrumentSite.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 1, 19, 16, 18, 32, 355, DateTimeKind.Utc).AddTicks(4206),
+                            CreatedAt = new DateTime(2025, 1, 27, 19, 28, 27, 366, DateTimeKind.Utc).AddTicks(5701),
                             Email = "admin@example.com",
                             FirstName = "Alex",
                             LastName = "Kacov",
-                            PasswordHash = "$2a$11$WCFVgOuqtHO2nVsWN0api.F0f3xU/RUjviHm8rTPfF.a35OsnzG.K",
+                            PasswordHash = "$2a$11$HHFUpodD2Cu0L7ZTjjZHw.hcD85odE7qyx97MM28aQgq/C9oNPMES",
                             Role = "Admin",
-                            UpdatedAt = new DateTime(2025, 1, 19, 16, 18, 32, 355, DateTimeKind.Utc).AddTicks(4210)
+                            UpdatedAt = new DateTime(2025, 1, 27, 19, 28, 27, 366, DateTimeKind.Utc).AddTicks(5704)
                         });
                 });
 

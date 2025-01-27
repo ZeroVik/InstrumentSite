@@ -8,6 +8,7 @@
         public string CategoryName { get; set; }
         public string ImageUrl { get; set; }
         public bool IsSecondHand { get; set; }
+        public int CategoryId { get; set; }
     }
 
 }

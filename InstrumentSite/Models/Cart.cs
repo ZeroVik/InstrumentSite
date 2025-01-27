@@ -6,7 +6,7 @@ namespace InstrumentSite.Models
     {
             [Key]
             public int Id { get; set; }
-            public string UserId { get; set; } // Link the cart to a specific user
+            public int UserId { get; set; } // Link the cart to a specific user
             public ICollection<CartItem> CartItems { get; set; }
             public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
             public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

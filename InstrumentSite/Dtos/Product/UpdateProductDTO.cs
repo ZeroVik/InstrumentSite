@@ -18,6 +18,6 @@ public class UpdateProductDTO
     [Required]
     public int CategoryId { get; set; }
 
-    public string ImageUrl { get; set; }
-    public IFormFile ImageFile { get; set; }
+    public string? ImageUrl { get; set; } // Optional if no new image is provided
+    public IFormFile? ImageFile { get; set; } // Optional if no new image is uploaded
 }

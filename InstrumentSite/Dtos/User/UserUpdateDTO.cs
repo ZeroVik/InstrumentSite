@@ -8,19 +8,15 @@ namespace InstrumentSite.Dtos.User
         [Required]
         public int Id { get; set; }
 
-        [Required]
         [MaxLength(100)]
-        public string FirstName { get; set; }
-        
-        [Required]
+        public string FirstName { get; set; } // Optional
 
         [MaxLength(100)]
-        public string LastName { get; set; }
+        public string LastName { get; set; } // Optional
 
         [MinLength(6)]
         public string? Password { get; set; } // Optional password update
 
-        [Required]
-        public UserRoleEnum? Role { get; set; }
+        public UserRoleEnum? Role { get; set; } // Optional role update
     }
 }

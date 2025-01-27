@@ -2,7 +2,7 @@
 {
     public class SaveImageUtil
     {
-        public static async Task<string> SaveImageFileAsync(IFormFile imageFile)
+        public static async Task<string> SaveImageFileAsync(IFormFile imageFile, HttpRequest request)
         {
             var uploadsDirectory = Path.Combine("wwwroot", "uploads", "products");
             if (!Directory.Exists(uploadsDirectory))
@@ -18,9 +18,11 @@
                 await imageFile.CopyToAsync(stream);
             }
 
-            // Return relative path
-            return Path.Combine("uploads/products", fileName).Replace("\\", "/");
+            // Build full URL
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            return Path.Combine(baseUrl, "uploads/products", fileName).Replace("\\", "/");
         }
+
 
 
     }

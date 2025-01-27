@@ -2,6 +2,7 @@
 using InstrumentSite.Models;
 using InstrumentSite.Repositories;
 using InstrumentSite.Utilities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,9 @@ namespace InstrumentSite.Services
                 Name = product.Name,
                 Price = product.Price,
                 CategoryName = product.Category.Name,
-                ImageUrl = product.ImageUrl
+                ImageUrl = product.ImageUrl,
+                IsSecondHand = product.IsSecondHand,
+                CategoryId = product.Category.Id
             });
         }
 
@@ -44,11 +47,12 @@ namespace InstrumentSite.Services
                 Name = product.Name,
                 Price = product.Price,
                 CategoryName = product.Category.Name,
-                ImageUrl = product.ImageUrl
+                ImageUrl = product.ImageUrl,
+                IsSecondHand = product.IsSecondHand
             };
         }
 
-        public async Task<int> AddProductAsync(CreateProductDTO productDto, bool isSecondHand)
+        public async Task<int> AddProductAsync(CreateProductDTO productDto, bool isSecondHand, HttpRequest request)
         {
             if (string.IsNullOrWhiteSpace(productDto.Name))
             {
@@ -60,8 +64,8 @@ namespace InstrumentSite.Services
                 throw new ArgumentException("Product image is required.");
             }
 
-            // Save the image
-            var imagePath = await SaveImageUtil.SaveImageFileAsync(productDto.ImageFile);
+            // Save the image and generate full URL
+            var imageUrl = await SaveImageUtil.SaveImageFileAsync(productDto.ImageFile, request);
 
             var product = new Product
             {
@@ -69,12 +73,29 @@ namespace InstrumentSite.Services
                 Description = productDto.Description,
                 Price = productDto.Price,
                 CategoryId = productDto.CategoryId,
-                IsSecondHand = isSecondHand, // Set IsSecondHand here
-                ImageUrl = imagePath
+                IsSecondHand = isSecondHand,
+                ImageUrl = imageUrl
             };
 
             return await _productRepository.AddProductAsync(product);
         }
+
+
+        public async Task<IEnumerable<ProductDTO>> GetProductsByCategoryAsync(string categoryName)
+        {
+            var products = await _productRepository.GetProductsByCategoryAsync(categoryName); // Use repository here
+            return products.Select(product => new ProductDTO
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Price = product.Price,
+                ImageUrl = product.ImageUrl,
+                IsSecondHand = product.IsSecondHand,
+                CategoryName = product.Category.Name // Map the Category.Name
+            });
+        }
+
+
 
 
         public async Task<IEnumerable<ProductDTO>> GetProductsByTypeAsync(bool isSecondHand)
@@ -92,17 +113,31 @@ namespace InstrumentSite.Services
         }
 
 
-        public async Task<bool> UpdateProductAsync(UpdateProductDTO productDto)
+        public async Task<bool> UpdateProductAsync(UpdateProductDTO productDto, HttpRequest request)
         {
-            if (productDto.Price <= 0)
+            var existingProduct = await _productRepository.GetProductByIdAsync(productDto.Id);
+            if (existingProduct == null)
             {
-                throw new ArgumentException("Price must be greater than zero.");
+                return false; // Product not found
             }
 
-            // Save new image if provided
+            // Handle new image upload
             if (productDto.ImageFile != null)
             {
-                productDto.ImageUrl = await SaveImageUtil.SaveImageFileAsync(productDto.ImageFile);
+                var newImageUrl = await SaveImageUtil.SaveImageFileAsync(productDto.ImageFile, request);
+                productDto.ImageUrl = newImageUrl;
+
+                // Optionally delete old image from storage
+                var oldImagePath = Path.Combine("wwwroot", "uploads", "products", Path.GetFileName(existingProduct.ImageUrl));
+                if (File.Exists(oldImagePath))
+                {
+                    File.Delete(oldImagePath);
+                }
+            }
+            else
+            {
+                // Retain existing ImageUrl
+                productDto.ImageUrl = existingProduct.ImageUrl;
             }
 
             var product = new Product
@@ -117,6 +152,11 @@ namespace InstrumentSite.Services
 
             return await _productRepository.UpdateProductAsync(product);
         }
+
+
+
+
+
 
         public async Task<bool> DeleteProductAsync(int id)
         {

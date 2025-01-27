@@ -23,8 +23,18 @@ namespace InstrumentSite.Controllers
         public async Task<ActionResult<IEnumerable<ProductDTO>>> GetAllProducts()
         {
             var products = await _productService.GetAllProductsAsync();
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+            foreach (var product in products)
+            {
+                // Assuming 'ImageUrl' currently holds relative paths like "uploads/Guitar.jpg"
+                product.ImageUrl = $"{baseUrl}/{product.ImageUrl}"; // Convert to absolute URL
+            }
+
             return Ok(products);
         }
+
+
 
         [HttpGet("details/{id}", Name = "GetProductDetails")] // GET /api/products/details/{id}
         public async Task<ActionResult<ProductDTO>> GetProductById(int id)
@@ -47,23 +57,42 @@ namespace InstrumentSite.Controllers
             return Ok(products);
         }
 
+        [HttpGet("related", Name = "GetRelatedProducts")]
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProductsByCategory([FromQuery] string category)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+            {
+                return BadRequest(new { message = "Category parameter is required." });
+            }
+
+            var products = await _productService.GetProductsByCategoryAsync(category);
+
+            if (products == null || !products.Any())
+            {
+                return NotFound(new { message = $"No products found for category '{category}'." });
+            }
+
+            return Ok(products);
+        }
+
+
 
         [HttpPost("create", Name = "CreateProduct")]
-        public async Task<ActionResult<int>> AddProduct([FromForm] CreateProductDTO productDto)
+        public async Task<ActionResult<ProductDTO>> AddProduct([FromForm] CreateProductDTO productDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
             try
             {
-                // Check if the user is an admin
                 var isAdmin = User.IsInRole("Admin");
+                var productId = await _productService.AddProductAsync(productDto, !isAdmin, Request);
 
-                // Pass the IsSecondHand value explicitly
-                var productId = await _productService.AddProductAsync(productDto, !isAdmin);
-                return CreatedAtAction(nameof(GetProductById), new { id = productId }, productDto);
+                // Fetch the created product by ID to include all its details
+                var createdProduct = await _productService.GetProductByIdAsync(productId);
+
+                return CreatedAtAction(nameof(GetProductById), new { id = productId }, createdProduct);
             }
             catch (ArgumentException ex)
             {
@@ -76,23 +105,19 @@ namespace InstrumentSite.Controllers
         }
 
 
-        [HttpPut("update/{id}", Name = "UpdateProduct")] // PUT /api/products/update/{id}
-        [Authorize(Policy = "AdminPolicy")]
+
+
+        [HttpPut("update/{id}", Name = "UpdateProduct")]
         public async Task<IActionResult> UpdateProduct(int id, [FromForm] UpdateProductDTO productDto)
         {
             if (id != productDto.Id)
             {
-                return BadRequest("Product ID in the URL does not match the ID in the body.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
+                return BadRequest(new { message = "Product ID in the URL does not match the ID in the body." });
             }
 
             try
             {
-                var updated = await _productService.UpdateProductAsync(productDto);
+                var updated = await _productService.UpdateProductAsync(productDto, Request);
                 if (!updated)
                 {
                     return NotFound(new { message = $"Product with ID {id} not found." });
@@ -103,14 +128,11 @@ namespace InstrumentSite.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
-            }
         }
 
+
+
         [HttpDelete("remove/{id}", Name = "DeleteProduct")] // DELETE /api/products/remove/{id}
-        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
