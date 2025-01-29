@@ -60,15 +60,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
 });
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", builder =>
-    {
-        builder.WithOrigins("http://localhost:5174") // Frontend URL
-               .AllowAnyHeader()
-               .AllowAnyMethod();
-    });
-});
+
 
 var app = builder.Build();
 
