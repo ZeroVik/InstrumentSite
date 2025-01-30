@@ -4,6 +4,7 @@ using InstrumentSite.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using InstrumentSite.Enums;
 
 namespace InstrumentSite.Services
 {
@@ -18,36 +19,81 @@ namespace InstrumentSite.Services
             _productRepository = productRepository;
         }
 
+
+
         public async Task<CartDTO> GetCartByUserIdAsync(int userId)
         {
             var cart = await _cartRepository.GetCartByUserIdAsync(userId);
-            if (cart == null)
-            {
-                return new CartDTO
-                {
-                    UserId = userId,
-                    Items = new List<CartItemDTO>(),
-                    TotalPrice = 0
-                };
-            }
 
             var cartDto = new CartDTO
             {
-                CartId = cart.Id,
-                UserId = cart.UserId,
-                Items = cart.CartItems.Select(item => new CartItemDTO
-                {
-                    CartItemId = item.Id,
-                    ProductId = item.ProductId,
-                    ProductName = item.Product.Name,
-                    UnitPrice = item.Price,
-                    Quantity = item.Quantity
-                }).ToList(),
-                TotalPrice = cart.CartItems.Sum(item => item.Price * item.Quantity)
+                UserId = userId,
+                Items = new List<CartItemDTO>(),
+                TotalPrice = 0,
+                DiscountAmount = 0,
+                GrandTotal = 0,
+                DiscountMessage = null
             };
+
+            if (cart == null) return cartDto;
+
+            cartDto.CartId = cart.Id;
+            cartDto.Items = cart.CartItems.Select(item => new CartItemDTO
+            {
+                CartItemId = item.Id,
+                ProductId = item.ProductId,
+                ProductName = item.Product.Name,
+                UnitPrice = item.Price,
+                Quantity = item.Quantity,
+                // Subtotal is calculated automatically by the DTO
+                UserId = item.Cart.UserId
+            }).ToList();
+
+            // Calculate total price using the DTO's Subtotal property
+            cartDto.TotalPrice = cartDto.Items.Sum(item => item.Subtotal);
+
+            // Apply discount rules
+            if (cartDto.TotalPrice >= 500)
+            {
+                cartDto.DiscountAmount = cartDto.TotalPrice * 0.10m;
+                cartDto.DiscountMessage = "10% discount on orders over $500!";
+            }
+            else if (cartDto.TotalPrice >= 200)
+            {
+                cartDto.DiscountAmount = cartDto.TotalPrice * 0.05m;
+                cartDto.DiscountMessage = "5% discount on orders over $200!";
+            }
+
+            cartDto.GrandTotal = cartDto.TotalPrice - cartDto.DiscountAmount;
 
             return cartDto;
         }
+
+        public async Task<CartOperationResultEnum> UpdateCartItemQuantityAsync(
+        int cartItemId,
+        int quantity,
+        int userId)
+        {
+            // Validation
+            if (quantity < 1 || quantity > 100)
+                return CartOperationResultEnum.InvalidQuantity;
+
+            // Get cart item with ownership check
+            var cartItem = await _cartRepository.GetCartItemWithDetailsAsync(cartItemId);
+            if (cartItem?.Cart?.UserId != userId)
+                return CartOperationResultEnum.Unauthorized;
+
+            // Check product stock
+            var product = await _productRepository.GetProductByIdAsync(cartItem.ProductId);
+            
+
+            // Update and save
+            cartItem.Quantity = quantity;
+            await _cartRepository.UpdateCartItemAsync(cartItem);
+
+            return CartOperationResultEnum.Success;
+        }
+
 
         public async Task AddToCartAsync(int userId, int productId, int quantity, decimal price)
         {

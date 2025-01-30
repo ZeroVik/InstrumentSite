@@ -13,7 +13,6 @@ namespace InstrumentSite.Models
             public Product Product { get; set; }
             public int Quantity { get; set; } = 1;
             public decimal Price { get; set; } // Price at the time of adding to cart
-        
 
     }
 }

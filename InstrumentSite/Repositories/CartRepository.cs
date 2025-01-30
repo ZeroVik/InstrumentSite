@@ -24,6 +24,14 @@ namespace InstrumentSite.Repositories
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
+        public async Task<CartItem> GetCartItemWithDetailsAsync(int cartItemId)
+        {
+            return await _dbContext.CartItems
+                .Include(ci => ci.Cart)
+                .Include(ci => ci.Product)
+                .FirstOrDefaultAsync(ci => ci.Id == cartItemId);
+        }
+
         public async Task<Cart> CreateCartAsync(Cart cart)
         {
             await _dbContext.Carts.AddAsync(cart);
@@ -51,6 +59,14 @@ namespace InstrumentSite.Repositories
                 _dbContext.CartItems.Remove(cartItem);
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<Cart> GetCartWithItemsAsync(int userId)
+        {
+            return await _dbContext.Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
         public async Task ClearCartAsync(int cartId)

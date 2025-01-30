@@ -2,7 +2,9 @@
 using InstrumentSite.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using InstrumentSite.Enums;
 
 namespace InstrumentSite.Controllers
 {
@@ -11,10 +13,13 @@ namespace InstrumentSite.Controllers
     public class CartController : ControllerBase
     {
         private readonly CartService _cartService;
+        ILogger<CartController> _logger;
 
-        public CartController(CartService cartService)
+        public CartController(CartService cartService, ILogger<CartController> logger)
         {
             _cartService = cartService;
+            _logger = logger;
+
         }
 
         // Get cart by userId
@@ -30,7 +35,46 @@ namespace InstrumentSite.Controllers
             return Ok(cart);
         }
 
-        // Add an item to the cart
+        [HttpPut("UpdateQuantity/{cartItemId}")]
+        public async Task<IActionResult> UpdateQuantity(
+        int cartItemId,
+        [FromQuery] int quantity)
+        {
+            try
+            {
+                var userId = GetAuthenticatedUserId();
+                if (!userId.HasValue) return Unauthorized();
+
+                var result = await _cartService.UpdateCartItemQuantityAsync(
+                    cartItemId,
+                    quantity,
+                    userId.Value);
+
+                return result switch
+                {
+                    CartOperationResultEnum.Success => NoContent(),
+                    CartOperationResultEnum.NotFound => NotFound("Cart item not found"),
+                    CartOperationResultEnum.InvalidQuantity => BadRequest("Quantity must be between 1-100"),
+                    CartOperationResultEnum.Unauthorized => Unauthorized("Not your cart item"),
+                    _ => StatusCode(500, "Unexpected error")
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating cart quantity");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        private int? GetAuthenticatedUserId()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(userIdClaim, out var userId) ? userId : null;
+        }
+    
+
+
+    // Add an item to the cart
         [HttpPost("AddItem")]
         public async Task<IActionResult> AddToCart([FromBody] CartItemDTO cartItemDto)
         {
@@ -62,6 +106,8 @@ namespace InstrumentSite.Controllers
 
             return Ok(new { message = "Item removed from cart successfully." });
         }
+
+        
 
         // Clear the cart for a specific user
         [HttpDelete("ClearCart/{userId}")]
